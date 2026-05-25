@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kana Kahoot Game</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Tone.js CDN for robust retro synth creation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f9ff; /* Soft sky blue hue */
+            margin: 0;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Timer animation class */
+        @keyframes shrink {
+            from { width: 100%; }
+            to { width: 0%; }
+        }
+        .animate-shrink {
+            animation: shrink 4s linear forwards;
+        }
+
+        /* Beautiful sky blue background pattern for screens */
+        .bg-pattern {
+            background-color: #e0f2fe;
+            background-image: radial-gradient(#bae6fd 2px, transparent 2px);
+            background-size: 32px 32px;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // Basic Gojuon only. No dakuten, handakuten, small tsu, or 'ん'.
+        const SINGLE_CHARS = [
+            {h:'あ',k:'ア',r:'a'}, {h:'い',k:'イ',r:'i'}, {h:'う',k:'ウ',r:'u'}, {h:'え',k:'エ',r:'e'}, {h:'お',k:'オ',r:'o'},
+            {h:'か',k:'カ',r:'ka'},{h:'き',k:'キ',r:'ki'},{h:'く',k:'ク',r:'ku'},{h:'け',k:'ケ',r:'ke'},{h:'こ',k:'コ',r:'ko'},
+            {h:'さ',k:'サ',r:'sa'},{h:'し',k:'シ',r:'shi'},{h:'す',k:'ス',r:'su'},{h:'せ',k:'セ',r:'se'},{h:'そ',k:'ソ',r:'so'},
+            {h:'た',k:'タ',r:'ta'},{h:'ち',k:'チ',r:'chi'},{h:'つ',k:'ツ',r:'tsu'},{h:'て',k:'テ',r:'te'},{h:'と',k:'ト',r:'to'},
+            {h:'な',k:'ナ',r:'na'},{h:'に',k:'ニ',r:'ni'},{h:'ぬ',k:'ヌ',r:'nu'},{h:'ね',k:'ネ',r:'ne'},{h:'の',k:'ノ',r:'no'},
+            {h:'は',k:'ハ',r:'ha'},{h:'ひ',k:'ヒ',r:'hi'},{h:'ふ',k:'フ',r:'fu'},{h:'へ',k:'ヘ',r:'he'},{h:'ほ',k:'ホ',r:'ho'},
+            {h:'ま',k:'マ',r:'ma'},{h:'み',k:'ミ',r:'mi'},{h:'む',k:'ム',r:'mu'},{h:'め',k:'メ',r:'me'},{h:'も',k:'モ',r:'mo'},
+            {h:'や',k:'ヤ',r:'ya'},{h:'ゆ',k:'ユ',r:'yu'},{h:'よ',k:'ヨ',r:'yo'},
+            {h:'ら',k:'ラ',r:'ra'},{h:'り',k:'リ',r:'ri'},{h:'る',k:'ル',r:'ru'},{h:'れ',k:'レ',r:'re'},{h:'ろ',k:'ロ',r:'ro'},
+            {h:'わ',k:'ワ',r:'wa'},{h:'を',k:'ヲ',r:'wo'}
+        ];
+
+        // Combined words satisfying the exact constraints
+        const WORDS_HIRAGANA = [
+            {k:'おはよう',r:'ohayou'}, {k:'おやすみ',r:'oyasumi'}, {k:'あかい',r:'akai'}, {k:'あおい',r:'aoi'},
+            {k:'きく',r:'kiku'}, {k:'すし',r:'sushi'}, {k:'せかい',r:'sekai'}, {k:'たかい',r:'takai'},
+            {k:'とけい',r:'tokei'}, {k:'ねこ',r:'neko'}, {k:'はな',r:'hana'}, {k:'ふね',r:'fune'},
+            {k:'ほし',r:'hoshi'}, {k:'まち',r:'machi'}, {k:'やま',r:'yama'}, {k:'ゆき',r:'yuki'},
+            {k:'さくら',r:'sakura'}, {k:'わたし',r:'watashi'}, {k:'あたま',r:'atama'}, {k:'くるま',r:'kuruma'},
+            {k:'こころ',r:'kokoro'}, {k:'そら',r:'sora'}, {k:'とり',r:'tori'}, {k:'ひと',r:'hito'},
+            {k:'あさひ',r:'asahi'}, {k:'しお',r:'shio'}, {k:'にく',r:'niku'}, {k:'いぬ',r:'inu'},
+            {k:'うし',r:'ushi'}, {k:'うま',r:'uma'}, {k:'さる',r:'saru'}, {k:'きし',r:'kishi'},
+            {k:'つき',r:'tsuki'}, {k:'ふゆ',r:'fuyu'}, {k:'はる',r:'haru'}, {k:'なつ',r:'natsu'},
+            {k:'あき',r:'aki'}, {k:'よる',r:'yoru'}, {k:'あさ',r:'asa'}, {k:'ひる',r:'hiru'}, {k:'ゆめ',r:'yume'}
+        ];
+
+        const WORDS_KATAKANA = [
+            {k:'カメラ',r:'kamera'}, {k:'クラス',r:'kurasu'}, {k:'テスト',r:'tesuto'}, {k:'トマト',r:'tomato'},
+            {k:'ピアノ',r:'piano'}, {k:'マウス',r:'mausu'}, {k:'メロン',r:'meron'}, {k:'ライオン',r:'raion'},
+            {k:'アメリカ',r:'amerika'}, {k:'アフリカ',r:'afurika'}, {k:'ミルク',r:'miruku'}, {k:'ホテル',r:'hoteru'},
+            {k:'マスク',r:'masuku'}, {k:'スイス',r:'suisu'}, {k:'トイレ',r:'toire'}, {k:'タイヤ',r:'taiya'},
+            {k:'スイカ',r:'suika'}, {k:'ナイフ',r:'naifu'}, {k:'クモ',r:'kumo'}, {k:'メカ',r:'meka'},
+            {k:'キス',r:'kisu'}, {k:'メモ',r:'memo'}, {k:'ミク',r:'miku'}, {k:'ヘア',r:'hea'},
+            {k:'ツア',r:'tsua'}, {k:'マキ',r:'maki'}, {k:'システム',r:'shisutemu'}, {k:'アニメ',r:'anime'},
+            {k:'スマホ',r:'sumaho'}, {k:'テキスト',r:'tekisuto'}
+        ];
+
+        function generateQuestions(settings) {
+            let pool = [];
+            
+            // Populate pool based on user preferences
+            if (settings.difficulty === 'single') {
+                SINGLE_CHARS.forEach(item => {
+                    if (settings.kanaType === 'hiragana' || settings.kanaType === 'both') {
+                        pool.push({ kana: item.h, romaji: item.r });
+                    }
+                    if (settings.kanaType === 'katakana' || settings.kanaType === 'both') {
+                        pool.push({ kana: item.k, romaji: item.r });
+                    }
+                });
+            } else {
+                if (settings.kanaType === 'hiragana' || settings.kanaType === 'both') {
+                    WORDS_HIRAGANA.forEach(w => pool.push({ kana: w.k, romaji: w.r }));
+                }
+                if (settings.kanaType === 'katakana' || settings.kanaType === 'both') {
+                    WORDS_KATAKANA.forEach(w => pool.push({ kana: w.k, romaji: w.r }));
+                }
+            }
+
+            // Shuffle and clamp size
+            pool = pool.sort(() => 0.5 - Math.random());
+            let count = Math.min(settings.questionCount, pool.length);
+            if (count === 0) return []; 
+            
+            let questions = [];
+            
+            for(let i = 0; i < count; i++) {
+                let current = pool[i];
+                let qText = settings.mode === 'kanaToRomaji' ? current.kana : current.romaji;
+                let correctText = settings.mode === 'kanaToRomaji' ? current.romaji : current.kana;
+                
+                // Keep option pools free of duplicates
+                let wrongPool = pool.filter(x => x.romaji !== current.romaji); 
+                wrongPool = wrongPool.sort(() => 0.5 - Math.random()).slice(0, 3);
+                
+                while (wrongPool.length < 3) {
+                    wrongPool.push(wrongPool[0] || current); 
+                }
+
+                let options = [correctText, ...wrongPool.map(x => settings.mode === 'kanaToRomaji' ? x.romaji : x.kana)];
+                options = options.sort(() => 0.5 - Math.random());
+                
+                questions.push({
+                    question: qText,
+                    correct: correctText,
+                    options: options
+                });
+            }
+            return questions;
+        }
+
+        // Simplified Mario Overworld Theme sequence array
+        const marioSequence = [
+            "E5", "E5", null, "E5", null, "C5", "E5", null,
+            "G5", null, null, null, "G4", null, null, null,
+            "C5", null, null, "G4", null, null, "E4", null,
+            null, "A4", null, "B4", null, "A#4", "A4", null,
+            "G4", "E5", "G5", "A5", null, "F5", "G5", null,
+            "E5", null, "C5", "D5", "B4", null, null, null
+        ];
+
+        function Home({ onStart }) {
+            const [kanaType, setKanaType] = React.useState('both');
+            const [mode, setMode] = React.useState('kanaToRomaji');
+            const [qCount, setQCount] = React.useState(10);
+            const [difficulty, setDifficulty] = React.useState('single');
+
+            const handleCountChange = (e) => {
+                const val = parseInt(e.target.value) || 1;
+                setQCount(val);
+            };
+
+            return (
+                <div className="flex flex-col items-center justify-center min-h-screen bg-pattern p-4 w-full">
+                    <div className="bg-white rounded-[2rem] shadow-2xl p-8 md:p-10 max-w-md w-full border-4 border-sky-300">
+                        <div className="text-center mb-8 animate-bounce-short">
+                            <span className="text-5xl font-black text-sky-500 tracking-tight block drop-shadow-md">Zero to Hero</span>
+                            <span className="text-2xl font-bold text-gray-700 block mt-1 tracking-wider uppercase">Reborn: Kana Hero</span>
+                        </div>
+                        
+                        <div className="space-y-5">
+                            <div>
+                                <label className="block text-xs font-black text-sky-600 uppercase tracking-wider mb-2">Kana Selection</label>
+                                <select value={kanaType} onChange={e=>setKanaType(e.target.value)} className="w-full p-4 bg-sky-50 rounded-xl border border-sky-100 outline-none focus:ring-4 focus:ring-sky-200 font-bold text-gray-700 transition-all cursor-pointer">
+                                    <option value="hiragana">Hiragana Only</option>
+                                    <option value="katakana">Katakana Only</option>
+                                    <option value="both">Hiragana & Katakana</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-black text-sky-600 uppercase tracking-wider mb-2">Game Mode</label>
+                                <select value={mode} onChange={e=>setMode(e.target.value)} className="w-full p-4 bg-sky-50 rounded-xl border border-sky-100 outline-none focus:ring-4 focus:ring-sky-200 font-bold text-gray-700 transition-all cursor-pointer">
+                                    <option value="kanaToRomaji">Kana to Romaji</option>
+                                    <option value="romajiToKana">Romaji to Kana</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-black text-sky-600 uppercase tracking-wider mb-2">Question Count</label>
+                                <div className="flex items-center space-x-3">
+                                    <button onClick={()=>setQCount(Math.max(1, qCount - 1))} className="w-[100px] h-14 bg-sky-100 hover:bg-sky-200 text-sky-800 rounded-xl font-black text-2xl shadow-[0_4px_0_0_#93c5fd] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center select-none">-</button>
+                                    <input type="number" value={qCount} onChange={handleCountChange} className="flex-1 min-w-[60px] p-4 bg-sky-50 rounded-xl border border-sky-100 outline-none focus:ring-4 focus:ring-sky-200 text-center font-black text-xl text-sky-800" />
+                                    <button onClick={()=>setQCount(qCount + 1)} className="w-[100px] h-14 bg-sky-100 hover:bg-sky-200 text-sky-800 rounded-xl font-black text-2xl shadow-[0_4px_0_0_#93c5fd] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center select-none">+</button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-black text-sky-600 uppercase tracking-wider mb-2">Difficulty</label>
+                                <select value={difficulty} onChange={e=>setDifficulty(e.target.value)} className="w-full p-4 bg-sky-50 rounded-xl border border-sky-100 outline-none focus:ring-4 focus:ring-sky-200 font-bold text-gray-700 transition-all cursor-pointer">
+                                    <option value="single">Single Letter</option>
+                                    <option value="combined">Combined Words</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button 
+                            onClick={() => onStart({ kanaType, mode, questionCount: qCount, difficulty })}
+                            className="mt-8 w-full bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white font-black py-5 rounded-2xl shadow-[0_8px_0_0_#0284c7] active:shadow-none active:translate-y-[8px] transition-all text-2xl tracking-wide uppercase flex items-center justify-center gap-3"
+                        >
+                            <span>🎮</span> Play Now
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        const SVG_TRIANGLE = <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 md:w-10 md:h-10"><path d="M12 2L22 20H2L12 2Z"/></svg>;
+        const SVG_DIAMOND  = <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 md:w-10 md:h-10"><path d="M12 2L22 12L12 22L2 12L12 2Z"/></svg>;
+        const SVG_CIRCLE   = <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 md:w-10 md:h-10"><circle cx="12" cy="12" r="10"/></svg>;
+        const SVG_SQUARE   = <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 md:w-10 md:h-10"><rect x="3" y="3" width="18" height="18"/></svg>;
+        const SHAPES = [SVG_TRIANGLE, SVG_DIAMOND, SVG_CIRCLE, SVG_SQUARE];
+
+        function Game({ settings, onEnd }) {
+            const [questions, setQuestions] = React.useState([]);
+            const [currentQ, setCurrentQ] = React.useState(0);
+            const [selectedIdx, setSelectedIdx] = React.useState(null);
+            const [isTransitioning, setIsTransitioning] = React.useState(false);
+            const [score, setScore] = React.useState(0);
+            const [isMuted, setIsMuted] = React.useState(false);
+            
+            const timerRef = React.useRef(null);
+            const resultsRef = React.useRef([]);
+            const synthRef = React.useRef(null);
+            const seqRef = React.useRef(null);
+
+            // Populate challenges on launch
+            React.useEffect(() => {
+                const qs = generateQuestions(settings);
+                setQuestions(qs);
+            }, [settings]);
+
+            // Tone.js Super Mario melody player effect
+            React.useEffect(() => {
+                // Audio context start wrapper
+                Tone.start();
+
+                // Setup 8-bit pulse synth
+                const synth = new Tone.Synth({
+                    oscillator: { type: "square" },
+                    envelope: { attack: 0.005, decay: 0.08, sustain: 0.1, release: 0.05 }
+                }).toDestination();
+
+                synth.volume.value = isMuted ? -99 : -14;
+                synthRef.current = synth;
+
+                // Program sequential Mario pattern
+                const seq = new Tone.Sequence((time, note) => {
+                    if (note) {
+                        synth.triggerAttackRelease(note, "16n", time);
+                    }
+                }, marioSequence, "16n");
+
+                Tone.Transport.bpm.value = 120;
+                seq.start(0);
+                Tone.Transport.start();
+                seqRef.current = seq;
+
+                return () => {
+                    if (seqRef.current) seqRef.current.dispose();
+                    if (synthRef.current) synthRef.current.dispose();
+                    Tone.Transport.stop();
+                };
+            }, []);
+
+            // Handle volume changes
+            React.useEffect(() => {
+                if (synthRef.current) {
+                    synthRef.current.volume.value = isMuted ? -99 : -14;
+                }
+            }, [isMuted]);
+
+            // Question countdown handler
+            React.useEffect(() => {
+                if (questions.length === 0) return;
+                
+                if (!isTransitioning) {
+                    timerRef.current = setTimeout(() => {
+                        handleTimeout();
+                    }, 4000);
+                }
+                return () => {
+                    if (timerRef.current) clearTimeout(timerRef.current);
+                };
+            }, [currentQ, isTransitioning, questions]);
+
+            const handleAnswer = (idx) => {
+                if (isTransitioning) return;
+                if (timerRef.current) clearTimeout(timerRef.current);
+                
+                setSelectedIdx(idx);
+                setIsTransitioning(true);
+                
+                const q = questions[currentQ];
+                const isCorrect = q.options[idx] === q.correct;
+                
+                if (isCorrect) setScore(s => s + 1);
+                
+                resultsRef.current.push({
+                    question: q.question,
+                    userAnswer: q.options[idx],
+                    correctAnswer: q.correct,
+                    isCorrect: isCorrect
+                });
+                
+                setTimeout(() => {
+                    nextQuestion();
+                }, 1500);
+            };
+
+            const handleTimeout = () => {
+                if (isTransitioning) return;
+                setSelectedIdx(-1);
+                setIsTransitioning(true);
+                
+                const q = questions[currentQ];
+                
+                resultsRef.current.push({
+                    question: q.question,
+                    userAnswer: 'Timeout',
+                    correctAnswer: q.correct,
+                    isCorrect: false
+                });
+                
+                setTimeout(() => {
+                    nextQuestion();
+                }, 1500);
+            };
+
+            const nextQuestion = () => {
+                setIsTransitioning(false);
+                setSelectedIdx(null);
+                if (currentQ < questions.length - 1) {
+                    setCurrentQ(prev => prev + 1);
+                } else {
+                    onEnd(resultsRef.current);
+                }
+            };
+
+            // Terminate the quiz prematurely, marking all outstanding questions as "Skipped"
+            const handleEndQuizEarly = () => {
+                if (timerRef.current) clearTimeout(timerRef.current);
+                
+                const currentResults = [...resultsRef.current];
+                
+                // If ending mid-question before answering, explicitly store current as skipped
+                if (!isTransitioning) {
+                    currentResults.push({
+                        question: questions[currentQ].question,
+                        userAnswer: 'Skipped',
+                        correctAnswer: questions[currentQ].correct,
+                        isCorrect: false
+                    });
+                }
+
+                // Add skipped items for all subsequent unvisited questions
+                for (let i = currentQ + 1; i < questions.length; i++) {
+                    currentResults.push({
+                        question: questions[i].question,
+                        userAnswer: 'Skipped',
+                        correctAnswer: questions[i].correct,
+                        isCorrect: false
+                    });
+                }
+                
+                onEnd(currentResults);
+            };
+
+            const getButtonClass = (idx, isCorrectOption) => {
+                const baseClass = "relative flex items-center px-4 md:px-8 py-6 rounded-2xl text-white font-bold transition-all h-full ";
+                const colors = [
+                    'bg-red-600 shadow-[0_8px_0_0_#991b1b] hover:bg-red-500',
+                    'bg-sky-600 shadow-[0_8px_0_0_#0284c7] hover:bg-sky-500',
+                    'bg-amber-500 shadow-[0_8px_0_0_#b45309] hover:bg-amber-400',
+                    'bg-emerald-600 shadow-[0_8px_0_0_#065f46] hover:bg-emerald-500'
+                ];
+                
+                if (!isTransitioning) {
+                    return baseClass + colors[idx] + " active:translate-y-[8px] active:shadow-[0_0px_0_0_transparent] cursor-pointer select-none";
+                }
+                
+                if (selectedIdx === idx) {
+                    if (isCorrectOption) {
+                        return baseClass + "bg-green-500 shadow-[0_8px_0_0_#15803d] animate-pulse z-10 scale-[1.02]";
+                    } else {
+                        return baseClass + "bg-red-600 shadow-[0_4px_0_0_#7f1d1d] scale-[0.98] opacity-75 translate-y-[4px]";
+                    }
+                }
+                
+                if (isCorrectOption && selectedIdx !== idx) {
+                    return baseClass + "bg-green-500 shadow-[0_8px_0_0_#15803d] animate-bounce z-10";
+                }
+                
+                return baseClass + colors[idx] + " opacity-40 scale-[0.98] translate-y-[4px]"; 
+            };
+
+            if (questions.length === 0) return (
+                <div className="min-h-screen bg-sky-100 flex items-center justify-center text-3xl font-bold text-sky-700 animate-pulse">
+                    Assembling Arena...
+                </div>
+            );
+
+            const q = questions[currentQ];
+
+            return (
+                <div className="min-h-screen bg-sky-50 flex flex-col font-sans h-screen overflow-hidden">
+                    {/* Header bar hosting question index, music switch, end early, and current scores */}
+                    <div className="flex justify-between items-center p-4 md:px-8 md:py-4 bg-white shadow-md border-b border-sky-100 z-10">
+                        <div className="flex items-center space-x-3">
+                            <div className="text-lg md:text-2xl font-black text-sky-800 bg-sky-100 py-2 px-4 rounded-xl">
+                                {currentQ + 1} <span className="text-sky-500 text-sm md:text-base">/ {questions.length}</span>
+                            </div>
+                            
+                            <button 
+                                onClick={() => setIsMuted(!isMuted)} 
+                                className="p-2 md:p-3 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all"
+                                title={isMuted ? "Unmute music" : "Mute music"}
+                            >
+                                {isMuted ? "🔇" : "🔊 🎶"}
+                            </button>
+                        </div>
+                        
+                        <div className="flex items-center space-x-3">
+                            {/* Super Mario theme banner */}
+                            <span className="hidden md:inline-block text-xs font-bold text-sky-600 bg-sky-50 px-3 py-2 rounded-full border border-sky-100 animate-pulse">
+                                🎶 Retro Mario Theme Active
+                            </span>
+                            
+                            {/* End button in Gameplay screen */}
+                            <button 
+                                onClick={handleEndQuizEarly}
+                                className="bg-red-500 hover:bg-red-600 active:scale-95 text-white font-extrabold px-4 py-2 rounded-xl shadow-md text-sm md:text-base transition-all flex items-center gap-1"
+                            >
+                                🛑 <span className="hidden sm:inline">End Quiz</span>
+                            </button>
+
+                            <div className="text-lg md:text-2xl font-black text-white bg-sky-500 py-2 px-6 rounded-xl shadow-[0_4px_0_0_#0284c7]">
+                                score: {score}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div className="flex-1 flex flex-col p-4 md:p-8 space-y-4 md:space-y-6 w-full max-w-7xl mx-auto">
+                        <div className="flex-1 bg-white rounded-[2rem] shadow-xl flex flex-col overflow-hidden relative border border-sky-100">
+                            {/* Visual Progress Countdown Meter */}
+                            <div className="h-4 bg-sky-50 w-full relative border-b border-sky-100">
+                                <div 
+                                    key={currentQ} 
+                                    className="absolute top-0 left-0 h-full bg-sky-400 animate-shrink origin-left"
+                                    style={{ animationPlayState: isTransitioning ? 'paused' : 'running' }}
+                                />
+                            </div>
+                            <div className="flex-1 flex items-center justify-center p-8 text-center bg-sky-50/10">
+                                <h2 className="text-6xl md:text-8xl lg:text-9xl font-black text-gray-800 break-words drop-shadow-md">{q.question}</h2>
+                            </div>
+                        </div>
+
+                        {/* Answers section */}
+                        <div className="grid grid-cols-2 gap-3 md:gap-6 h-[40vh] md:h-80">
+                            {q.options.map((opt, idx) => {
+                                const isCorrectOption = opt === q.correct;
+                                return (
+                                    <div 
+                                        key={idx} 
+                                        className={getButtonClass(idx, isCorrectOption)}
+                                        onClick={() => handleAnswer(idx)}
+                                    >
+                                        <div className="mr-3 md:mr-6 drop-shadow-md bg-black/10 p-2 rounded-lg">
+                                            {SHAPES[idx]}
+                                        </div>
+                                        <div className="flex-1 text-center text-xl md:text-5xl drop-shadow-md pr-6 md:pr-10 font-bold leading-tight break-words">
+                                            {opt}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function Result({ results, totalCount, onHome }) {
+            const correctCount = results.filter(r => r.isCorrect).length;
+            const wrongCount = totalCount - correctCount;
+            const percentage = Math.round((correctCount / totalCount) * 100) || 0;
+            
+            let scoreColor = "text-emerald-500";
+            let msg = "Superb!";
+            if (percentage < 80) { scoreColor = "text-amber-500"; msg = "Nice Try!"; }
+            if (percentage < 50) { scoreColor = "text-red-500"; msg = "Keep Training!"; }
+
+            return (
+                <div className="flex flex-col items-center min-h-screen bg-pattern p-4 md:py-12 w-full">
+                    <div className="bg-white rounded-[2rem] shadow-2xl p-8 md:p-10 max-w-3xl w-full text-center border-4 border-sky-200">
+                        <h1 className="text-4xl md:text-5xl font-black text-gray-800 mb-2">{msg}</h1>
+                        <p className="text-sky-500 font-bold mb-8 uppercase tracking-widest text-sm">Review Center</p>
+
+                        <div className={`text-7xl md:text-9xl font-black ${scoreColor} mb-8 drop-shadow-sm`}>
+                            {percentage}%
+                        </div>
+                        
+                        <div className="grid grid-cols-3 gap-3 md:gap-6 mb-10">
+                            <div className="bg-sky-50 p-4 md:p-6 rounded-2xl border border-sky-100">
+                                <div className="text-gray-500 font-bold text-xs md:text-sm uppercase mb-1">Total</div>
+                                <div className="text-2xl md:text-4xl font-black text-gray-800">{totalCount}</div>
+                            </div>
+                            <div className="bg-emerald-50 p-4 md:p-6 rounded-2xl border border-emerald-100">
+                                <div className="text-emerald-600 font-bold text-xs md:text-sm uppercase mb-1">Correct</div>
+                                <div className="text-2xl md:text-4xl font-black text-emerald-600">{correctCount}</div>
+                            </div>
+                            <div className="bg-red-50 p-4 md:p-6 rounded-2xl border border-red-100">
+                                <div className="text-red-600 font-bold text-xs md:text-sm uppercase mb-1">Wrong</div>
+                                <div className="text-2xl md:text-4xl font-black text-red-600">{wrongCount}</div>
+                            </div>
+                        </div>
+                        
+                        {wrongCount > 0 && (
+                            <div className="text-left mb-10">
+                                <h2 className="text-2xl font-black mb-4 text-gray-800 border-b-2 border-sky-100 pb-3">Areas for Review</h2>
+                                <div className="space-y-4 max-h-80 overflow-y-auto pr-2">
+                                    {results.filter(r => !r.isCorrect).map((r, i) => (
+                                        <div key={i} className="bg-red-50 p-4 md:p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between border-l-8 border-red-500 shadow-sm gap-2">
+                                            <div className="text-lg font-bold text-gray-700 flex items-center">
+                                                <span className="text-xs uppercase text-gray-400 mr-3">Question</span> 
+                                                <span className="text-2xl text-gray-900 bg-white px-4 py-1 rounded-lg border border-red-100">{r.question}</span>
+                                            </div>
+                                            <div className="flex flex-col text-sm md:text-right bg-white p-3 rounded-xl border border-red-100">
+                                                <div className="text-gray-500 font-bold mb-1">Your response: <span className="text-red-500 line-through ml-1 text-base font-black">{r.userAnswer}</span></div>
+                                                <div className="text-gray-700 font-black">Correct: <span className="text-emerald-600 text-lg ml-1 font-black">{r.correctAnswer}</span></div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        <button 
+                            onClick={onHome}
+                            className="w-full bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white font-black py-5 rounded-2xl shadow-[0_8px_0_0_#0284c7] active:shadow-none active:translate-y-[8px] transition-all text-2xl uppercase tracking-wide"
+                        >
+                            Play Again
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        function App() {
+            const [screen, setScreen] = React.useState('home');
+            const [settings, setSettings] = React.useState(null);
+            const [finalResults, setFinalResults] = React.useState(null);
+
+            const handleStart = (config) => {
+                setSettings(config);
+                setScreen('game');
+            };
+
+            const handleEnd = (results) => {
+                setFinalResults(results);
+                setScreen('result');
+            };
+
+            const handleHome = () => {
+                setScreen('home');
+                setSettings(null);
+                setFinalResults(null);
+            };
+
+            return (
+                <div className="w-full min-h-screen bg-sky-50 selection:bg-sky-200 selection:text-sky-900">
+                    {screen === 'home' && <Home onStart={handleStart} />}
+                    {screen === 'game' && <Game settings={settings} onEnd={handleEnd} />}
+                    {screen === 'result' && <Result results={finalResults} totalCount={finalResults.length} onHome={handleHome} />}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
