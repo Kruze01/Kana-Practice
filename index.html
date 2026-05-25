@@ -44,6 +44,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
+        
         // Basic Gojuon only. No dakuten, handakuten, small tsu, or 'ん'.
         const SINGLE_CHARS = [
             {h:'あ',k:'ア',r:'a'}, {h:'い',k:'イ',r:'i'}, {h:'う',k:'ウ',r:'u'}, {h:'え',k:'エ',r:'e'}, {h:'お',k:'オ',r:'o'},
@@ -58,7 +59,7 @@
             {h:'わ',k:'ワ',r:'wa'},{h:'を',k:'ヲ',r:'wo'}
         ];
 
-        // Combined words satisfying the exact constraints
+        // Combined words satisfying the basic constraints (No dakuten, handakuten, small tsu, or 'ん')
         const WORDS_HIRAGANA = [
             {k:'おはよう',r:'ohayou'}, {k:'おやすみ',r:'oyasumi'}, {k:'あかい',r:'akai'}, {k:'あおい',r:'aoi'},
             {k:'きく',r:'kiku'}, {k:'すし',r:'sushi'}, {k:'せかい',r:'sekai'}, {k:'たかい',r:'takai'},
@@ -83,10 +84,37 @@
             {k:'スマホ',r:'sumaho'}, {k:'テキスト',r:'tekisuto'}
         ];
 
+
+        // Dakuten and Handakuten (Single Letters)
+        const DAKUTEN_SINGLE = [
+            {h:'が', k:'ガ', r:'ga'}, {h:'ぎ', k:'ギ', r:'gi'}, {h:'ぐ', k:'グ', r:'gu'}, {h:'げ', k:'ゲ', r:'ge'}, {h:'ご', k:'ゴ', r:'go'},
+            {h:'ざ', k:'ザ', r:'za'}, {h:'じ', k:'ジ', r:'ji'}, {h:'ず', k:'ズ', r:'zu'}, {h:'ぜ', k:'ゼ', r:'ze'}, {h:'ぞ', k:'ゾ', r:'zo'},
+            {h:'だ', k:'ダ', r:'da'}, {h:'ぢ', k:'ヂ', r:'ji'}, {h:'づ', k:'ヅ', r:'zu'}, {h:'で', k:'デ', r:'de'}, {h:'ど', k:'ド', r:'do'},
+            {h:'ば', k:'バ', r:'ba'}, {h:'び', k:'ビ', r:'bi'}, {h:'ぶ', k:'ブ', r:'bu'}, {h:'べ', k:'ベ', r:'be'}, {h:'ぼ', k:'ボ', r:'bo'},
+            {h:'ぱ', k:'パ', r:'pa'}, {h:'ぴ', k:'ピ', r:'pi'}, {h:'ぷ', k:'プ', r:'pu'}, {h:'ぺ', k:'ペ', r:'pe'}, {h:'ぽ', k:'ポ', r:'po'}
+        ];
+
+        // Dakuten and Handakuten (Combined - including small tsu, and ん)
+        const WORDS_DAKUTEN_HIRAGANA = [
+            {k:'がっこう', r:'gakkou'}, {k:'てんき', r:'tenki'}, {k:'りんご', r:'ringo'}, {k:'でんわ', r:'denwa'},
+            {k:'えんぴつ', r:'enpitsu'}, {k:'かばん', r:'kaban'}, {k:'きっぷ', r:'kippu'}, {k:'しんぶん', r:'shinbun'},
+            {k:'ざっし', r:'zasshi'}, {k:'おんがく', r:'ongaku'}, {k:'てんぷら', r:'tenpura'}, {k:'まんが', r:'manga'},
+            {k:'ともだち', r:'tomodachi'}, {k:'みず', r:'mizu'}, {k:'ぶどう', r:'budou'}, {k:'てがみ', r:'tegami'},
+            {k:'かぜ', r:'kaze'}, {k:'べんきょう', r:'benkyou'}, {k:'にほんご', r:'nihongo'}, {k:'さんぽ', r:'sanpo'}
+        ];
+
+        const WORDS_DAKUTEN_KATAKANA = [
+            {k:'パン', r:'pan'}, {k:'ベッド', r:'beddo'}, {k:'テレビ', r:'terebi'}, {k:'ラジオ', r:'rajio'},
+            {k:'バッグ', r:'baggu'}, {k:'コップ', r:'koppu'}, {k:'ペン', r:'pen'}, {k:'ボタン', r:'botan'},
+            {k:'トランク', r:'toranku'}, {k:'リンゴ', r:'ringo'}, {k:'コンビニ', r:'konbini'}, {k:'プレゼント', r:'purezento'},
+            {k:'パパ', r:'papa'}, {k:'ガンダム', r:'gandamu'}, {k:'カップ', r:'kappu'}, {k:'ダンス', r:'dansu'},
+            {k:'ピンク', r:'pinku'}, {k:'マッチ', r:'macchi'}, {k:'ゲーム', r:'geemu'}, {k:'バナナ', r:'banana'}
+        ];
+
         function generateQuestions(settings) {
             let pool = [];
             
-            // Populate pool based on user preferences
+            // Populate pool based on user preferences and expanded difficulties
             if (settings.difficulty === 'single') {
                 SINGLE_CHARS.forEach(item => {
                     if (settings.kanaType === 'hiragana' || settings.kanaType === 'both') {
@@ -96,12 +124,28 @@
                         pool.push({ kana: item.k, romaji: item.r });
                     }
                 });
-            } else {
+            } else if (settings.difficulty === 'combined') {
                 if (settings.kanaType === 'hiragana' || settings.kanaType === 'both') {
                     WORDS_HIRAGANA.forEach(w => pool.push({ kana: w.k, romaji: w.r }));
                 }
                 if (settings.kanaType === 'katakana' || settings.kanaType === 'both') {
                     WORDS_KATAKANA.forEach(w => pool.push({ kana: w.k, romaji: w.r }));
+                }
+            } else if (settings.difficulty === 'dakuten_single') {
+                DAKUTEN_SINGLE.forEach(item => {
+                    if (settings.kanaType === 'hiragana' || settings.kanaType === 'both') {
+                        pool.push({ kana: item.h, romaji: item.r });
+                    }
+                    if (settings.kanaType === 'katakana' || settings.kanaType === 'both') {
+                        pool.push({ kana: item.k, romaji: item.r });
+                    }
+                });
+            } else if (settings.difficulty === 'dakuten_combined') {
+                if (settings.kanaType === 'hiragana' || settings.kanaType === 'both') {
+                    WORDS_DAKUTEN_HIRAGANA.forEach(w => pool.push({ kana: w.k, romaji: w.r }));
+                }
+                if (settings.kanaType === 'katakana' || settings.kanaType === 'both') {
+                    WORDS_DAKUTEN_KATAKANA.forEach(w => pool.push({ kana: w.k, romaji: w.r }));
                 }
             }
 
@@ -187,9 +231,11 @@
                             <div>
                                 <label className="block text-xs font-black text-sky-600 uppercase tracking-wider mb-2">Question Count</label>
                                 <div className="flex items-center space-x-3">
-                                    <button onClick={()=>setQCount(Math.max(1, qCount - 1))} className="w-[100px] h-14 bg-sky-100 hover:bg-sky-200 text-sky-800 rounded-xl font-black text-2xl shadow-[0_4px_0_0_#93c5fd] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center select-none">-</button>
+                                    {/* Configured exactly 70px as requested */}
+                                    <button onClick={()=>setQCount(Math.max(1, qCount - 1))} className="w-[70px] h-14 bg-sky-100 hover:bg-sky-200 text-sky-800 rounded-xl font-black text-2xl shadow-[0_4px_0_0_#93c5fd] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center select-none">-</button>
                                     <input type="number" value={qCount} onChange={handleCountChange} className="flex-1 min-w-[60px] p-4 bg-sky-50 rounded-xl border border-sky-100 outline-none focus:ring-4 focus:ring-sky-200 text-center font-black text-xl text-sky-800" />
-                                    <button onClick={()=>setQCount(qCount + 1)} className="w-[100px] h-14 bg-sky-100 hover:bg-sky-200 text-sky-800 rounded-xl font-black text-2xl shadow-[0_4px_0_0_#93c5fd] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center select-none">+</button>
+                                    {/* Configured exactly 70px as requested */}
+                                    <button onClick={()=>setQCount(qCount + 1)} className="w-[70px] h-14 bg-sky-100 hover:bg-sky-200 text-sky-800 rounded-xl font-black text-2xl shadow-[0_4px_0_0_#93c5fd] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center select-none">+</button>
                                 </div>
                             </div>
 
@@ -198,6 +244,8 @@
                                 <select value={difficulty} onChange={e=>setDifficulty(e.target.value)} className="w-full p-4 bg-sky-50 rounded-xl border border-sky-100 outline-none focus:ring-4 focus:ring-sky-200 font-bold text-gray-700 transition-all cursor-pointer">
                                     <option value="single">Single Letter</option>
                                     <option value="combined">Combined Words</option>
+                                    <option value="dakuten_single">Dakuten and Handakuten (Single)</option>
+                                    <option value="dakuten_combined">Dakuten and Handakuten (Combined)</option>
                                 </select>
                             </div>
                         </div>
@@ -212,12 +260,6 @@
                 </div>
             );
         }
-
-        const SVG_TRIANGLE = <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 md:w-10 md:h-10"><path d="M12 2L22 20H2L12 2Z"/></svg>;
-        const SVG_DIAMOND  = <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 md:w-10 md:h-10"><path d="M12 2L22 12L12 22L2 12L12 2Z"/></svg>;
-        const SVG_CIRCLE   = <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 md:w-10 md:h-10"><circle cx="12" cy="12" r="10"/></svg>;
-        const SVG_SQUARE   = <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 md:w-10 md:h-10"><rect x="3" y="3" width="18" height="18"/></svg>;
-        const SHAPES = [SVG_TRIANGLE, SVG_DIAMOND, SVG_CIRCLE, SVG_SQUARE];
 
         function Game({ settings, onEnd }) {
             const [questions, setQuestions] = React.useState([]);
@@ -463,7 +505,7 @@
                             </div>
                         </div>
 
-                        {/* Answers section */}
+                        {/* Answers section containing only centered texts */}
                         <div className="grid grid-cols-2 gap-3 md:gap-6 h-[40vh] md:h-80">
                             {q.options.map((opt, idx) => {
                                 const isCorrectOption = opt === q.correct;
@@ -473,10 +515,7 @@
                                         className={getButtonClass(idx, isCorrectOption)}
                                         onClick={() => handleAnswer(idx)}
                                     >
-                                        <div className="mr-3 md:mr-6 drop-shadow-md bg-black/10 p-2 rounded-lg">
-                                            {SHAPES[idx]}
-                                        </div>
-                                        <div className="flex-1 text-center text-xl md:text-5xl drop-shadow-md pr-6 md:pr-10 font-bold leading-tight break-words">
+                                        <div className="flex-1 text-center text-xl md:text-5xl drop-shadow-md font-bold leading-tight break-words px-4">
                                             {opt}
                                         </div>
                                     </div>
