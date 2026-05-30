@@ -84,7 +84,6 @@
             {k:'スマホ',r:'sumaho'}, {k:'テキスト',r:'tekisuto'}
         ];
 
-
         // Dakuten and Handakuten (Single Letters)
         const DAKUTEN_SINGLE = [
             {h:'が', k:'ガ', r:'ga'}, {h:'ぎ', k:'ギ', r:'gi'}, {h:'ぐ', k:'グ', r:'gu'}, {h:'げ', k:'ゲ', r:'ge'}, {h:'ご', k:'ゴ', r:'go'},
@@ -94,22 +93,47 @@
             {h:'ぱ', k:'パ', r:'pa'}, {h:'ぴ', k:'ピ', r:'pi'}, {h:'ぷ', k:'プ', r:'pu'}, {h:'ぺ', k:'ペ', r:'pe'}, {h:'ぽ', k:'ポ', r:'po'}
         ];
 
-        // Dakuten and Handakuten (Combined - including small tsu, and ん)
+        // Dakuten and Handakuten (Combined - EXCLUDING sokuon っ/ッ as requested)
         const WORDS_DAKUTEN_HIRAGANA = [
-            {k:'がっこう', r:'gakkou'}, {k:'てんき', r:'tenki'}, {k:'りんご', r:'ringo'}, {k:'でんわ', r:'denwa'},
-            {k:'えんぴつ', r:'enpitsu'}, {k:'かばん', r:'kaban'}, {k:'きっぷ', r:'kippu'}, {k:'しんぶん', r:'shinbun'},
-            {k:'ざっし', r:'zasshi'}, {k:'おんがく', r:'ongaku'}, {k:'てんぷら', r:'tenpura'}, {k:'まんが', r:'manga'},
+            {k:'てんき', r:'tenki'}, {k:'りんご', r:'ringo'}, {k:'でんわ', r:'denwa'},
+            {k:'えんぴつ', r:'enpitsu'}, {k:'かばん', r:'kaban'}, {k:'しんぶん', r:'shinbun'},
+            {k:'おんがく', r:'ongaku'}, {k:'てんぷら', r:'tenpura'}, {k:'まんが', r:'manga'},
             {k:'ともだち', r:'tomodachi'}, {k:'みず', r:'mizu'}, {k:'ぶどう', r:'budou'}, {k:'てがみ', r:'tegami'},
-            {k:'かぜ', r:'kaze'}, {k:'べんきょう', r:'benkyou'}, {k:'にほんご', r:'nihongo'}, {k:'さんぽ', r:'sanpo'}
+            {k:'かぜ', r:'kaze'}, {k:'べんきょう', r:'benkyou'}, {k:'にほんご', r:'nihongo'}, {k:'さんぽ', r:'sanpo'},
+            {k:'じしん', r:'jishin'}, {k:'えいが', r:'eiga'}, {k:'ばんごう', r:'bangou'}, {k:'かぞく', r:'kazoku'},
+            {k:'かぎ', r:'kagi'}
         ];
 
         const WORDS_DAKUTEN_KATAKANA = [
-            {k:'パン', r:'pan'}, {k:'ベッド', r:'beddo'}, {k:'テレビ', r:'terebi'}, {k:'ラジオ', r:'rajio'},
-            {k:'バッグ', r:'baggu'}, {k:'コップ', r:'koppu'}, {k:'ペン', r:'pen'}, {k:'ボタン', r:'botan'},
-            {k:'トランク', r:'toranku'}, {k:'リンゴ', r:'ringo'}, {k:'コンビニ', r:'konbini'}, {k:'プレゼント', r:'purezento'},
-            {k:'パパ', r:'papa'}, {k:'ガンダム', r:'gandamu'}, {k:'カップ', r:'kappu'}, {k:'ダンス', r:'dansu'},
-            {k:'ピンク', r:'pinku'}, {k:'マッチ', r:'macchi'}, {k:'ゲーム', r:'geemu'}, {k:'バナナ', r:'banana'}
+            {k:'パン', r:'pan'}, {k:'テレビ', r:'terebi'}, {k:'ラジオ', r:'rajio'},
+            {k:'ペン', r:'pen'}, {k:'ボタン', r:'botan'}, {k:'トランク', r:'toranku'}, {k:'リンゴ', r:'ringo'}, 
+            {k:'コンビニ', r:'konbini'}, {k:'プレゼント', r:'purezento'}, {k:'パパ', r:'papa'}, 
+            {k:'ガンダム', r:'gandamu'}, {k:'ダンス', r:'dansu'}, {k:'ピンク', r:'pinku'}, 
+            {k:'ゲーム', r:'geemu'}, {k:'バナナ', r:'banana'}, {k:'デパート', r:'depaato'},
+            {k:'ビル', r:'biru'}, {k:'ゼロ', r:'zero'}, {k:'ドア', r:'doa'}, {k:'ズボン', r:'zubon'}
         ];
+
+        // Ezzz Difficulty (All combined words: Hatsuson, Sokuon, Dakuten, Handakuten, Yo-on, etc.)
+        const WORDS_EZZZ_HIRAGANA = [
+            {k:'がっこう', r:'gakkou'}, {k:'きっぷ', r:'kippu'}, {k:'ざっし', r:'zasshi'},
+            {k:'べんきょう', r:'benkyou'}, {k:'ひゃく', r:'hyaku'}, {k:'びょういん', r:'byouin'},
+            {k:'しゅくだい', r:'shukudai'}, {k:'りょこう', r:'ryokou'}, {k:'おちゃ', r:'ocha'},
+            {k:'にんぎょう', r:'ningyou'}, {k:'じゅうどう', r:'juudou'}, {k:'いっしょ', r:'issho'},
+            {k:'ちょっと', r:'chotto'}, {k:'はっぴょう', r:'happyou'}, {k:'かんしゃ', r:'kansha'},
+            {k:'てんぷら', r:'tenpura'}, {k:'しんぶん', r:'shinbun'}, {k:'おっちゃ', r:'occha'},
+            {k:'ちゅうしゃじょ', r:'chuushajo'}, {k:'きょうりゅう', r:'kyouryuu'}
+        ];
+
+        const WORDS_EZZZ_KATAKANA = [
+            {k:'ベッド', r:'beddo'}, {k:'バッグ', r:'baggu'}, {k:'コップ', r:'koppu'},
+            {k:'カップ', r:'kappu'}, {k:'マッチ', r:'macchi'}, {k:'チケット', r:'chiketto'},
+            {k:'サッカー', r:'sakkaa'}, {k:'シャツ', r:'shatsu'}, {k:'チョコ', r:'choko'},
+            {k:'キャベツ', r:'kyabetsu'}, {k:'ジュース', r:'juusu'}, {k:'シャンプー', r:'shanpuu'},
+            {k:'ジョギング', r:'jogingu'}, {k:'コンピューター', r:'konpyuutaa'}, {k:'ロケット', r:'roketto'},
+            {k:'キッチン', r:'kicchin'}, {k:'キャッチ', r:'kyacchi'}, {k:'ショップ', r:'shoppu'},
+            {k:'リュック', r:'ryukku'}, {k:'マンション', r:'manshon'}
+        ];
+
 
         function generateQuestions(settings) {
             let pool = [];
@@ -146,6 +170,13 @@
                 }
                 if (settings.kanaType === 'katakana' || settings.kanaType === 'both') {
                     WORDS_DAKUTEN_KATAKANA.forEach(w => pool.push({ kana: w.k, romaji: w.r }));
+                }
+            } else if (settings.difficulty === 'ezzz') {
+                if (settings.kanaType === 'hiragana' || settings.kanaType === 'both') {
+                    WORDS_EZZZ_HIRAGANA.forEach(w => pool.push({ kana: w.k, romaji: w.r }));
+                }
+                if (settings.kanaType === 'katakana' || settings.kanaType === 'both') {
+                    WORDS_EZZZ_KATAKANA.forEach(w => pool.push({ kana: w.k, romaji: w.r }));
                 }
             }
 
@@ -190,6 +221,7 @@
             "G4", "E5", "G5", "A5", null, "F5", "G5", null,
             "E5", null, "C5", "D5", "B4", null, null, null
         ];
+
 
         function Home({ onStart }) {
             const [kanaType, setKanaType] = React.useState('both');
@@ -246,6 +278,7 @@
                                     <option value="combined">Combined Words</option>
                                     <option value="dakuten_single">Dakuten and Handakuten (Single)</option>
                                     <option value="dakuten_combined">Dakuten and Handakuten (Combined)</option>
+                                    <option value="ezzz">Ezzz</option>
                                 </select>
                             </div>
                         </div>
@@ -260,6 +293,7 @@
                 </div>
             );
         }
+
 
         function Game({ settings, onEnd }) {
             const [questions, setQuestions] = React.useState([]);
@@ -527,6 +561,7 @@
             );
         }
 
+
         function Result({ results, totalCount, onHome }) {
             const correctCount = results.filter(r => r.isCorrect).length;
             const wrongCount = totalCount - correctCount;
@@ -592,6 +627,7 @@
                 </div>
             );
         }
+
 
         function App() {
             const [screen, setScreen] = React.useState('home');
