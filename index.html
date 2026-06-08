@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kana Kahoot Game</title>
+    <title>Zero to Hero: Kana Reborn</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -28,9 +28,6 @@
             from { width: 100%; }
             to { width: 0%; }
         }
-        .animate-shrink {
-            animation: shrink 4s linear forwards;
-        }
 
         /* Beautiful sky blue background pattern for screens */
         .bg-pattern {
@@ -44,8 +41,8 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        
-        // Basic Gojuon only. No dakuten, handakuten, small tsu, or 'ん'.
+
+        // Basic Gojuon only (46 unique single letters). No dakuten, handakuten, small tsu, or 'ん'.
         const SINGLE_CHARS = [
             {h:'あ',k:'ア',r:'a'}, {h:'い',k:'イ',r:'i'}, {h:'う',k:'ウ',r:'u'}, {h:'え',k:'エ',r:'e'}, {h:'お',k:'オ',r:'o'},
             {h:'か',k:'カ',r:'ka'},{h:'き',k:'キ',r:'ki'},{h:'く',k:'ク',r:'ku'},{h:'け',k:'ケ',r:'ke'},{h:'こ',k:'コ',r:'ko'},
@@ -59,32 +56,45 @@
             {h:'わ',k:'ワ',r:'wa'},{h:'を',k:'ヲ',r:'wo'}
         ];
 
-        // Combined words satisfying the basic constraints (No dakuten, handakuten, small tsu, or 'ん')
-        const WORDS_HIRAGANA = [
-            {k:'おはよう',r:'ohayou'}, {k:'おやすみ',r:'oyasumi'}, {k:'あかい',r:'akai'}, {k:'あおい',r:'aoi'},
-            {k:'きく',r:'kiku'}, {k:'すし',r:'sushi'}, {k:'せかい',r:'sekai'}, {k:'たかい',r:'takai'},
-            {k:'とけい',r:'tokei'}, {k:'ねこ',r:'neko'}, {k:'はな',r:'hana'}, {k:'ふね',r:'fune'},
-            {k:'ほし',r:'hoshi'}, {k:'まち',r:'machi'}, {k:'やま',r:'yama'}, {k:'ゆき',r:'yuki'},
-            {k:'さくら',r:'sakura'}, {k:'わたし',r:'watashi'}, {k:'あたま',r:'atama'}, {k:'くるま',r:'kuruma'},
-            {k:'こころ',r:'kokoro'}, {k:'そら',r:'sora'}, {k:'とり',r:'tori'}, {k:'ひと',r:'hito'},
-            {k:'あさひ',r:'asahi'}, {k:'しお',r:'shio'}, {k:'にく',r:'niku'}, {k:'いぬ',r:'inu'},
-            {k:'うし',r:'ushi'}, {k:'うま',r:'uma'}, {k:'さる',r:'saru'}, {k:'きし',r:'kishi'},
-            {k:'つき',r:'tsuki'}, {k:'ふゆ',r:'fuyu'}, {k:'はる',r:'haru'}, {k:'なつ',r:'natsu'},
-            {k:'あき',r:'aki'}, {k:'よる',r:'yoru'}, {k:'あさ',r:'asa'}, {k:'ひる',r:'hiru'}, {k:'ゆめ',r:'yume'}
+        // Combined words satisfying constraints (Gojuon only, no dakuten, handakuten, small tsu, or 'ん' - 100 unique words)
+        const WORDS_COMBINED = [
+            {h:'あかい',k:'アカイ',r:'akai'}, {h:'ねこ',k:'ネコ',r:'neko'}, {h:'さくら',k:'サクラ',r:'sakura'},
+            {h:'そら',k:'ソラ',r:'sora'}, {h:'ゆき',k:'ユキ',r:'yuki'}, {h:'ひと',k:'ヒト',r:'hito'},
+            {h:'くるま',k:'クルマ',r:'kuruma'}, {h:'ふゆ',k:'フユ',r:'fuyu'}, {h:'はる',k:'ハル',r:'haru'},
+            {h:'なつ',k:'ナツ',r:'natsu'}, {h:'あき',k:'アキ',r:'aki'}, {h:'よる',k:'ヨル',r:'yoru'},
+            {h:'あさ',k:'アサ',r:'asa'}, {h:'ひる',k:'ヒル',r:'hiru'}, {h:'ゆめ',k:'ユメ',r:'yume'},
+            {h:'かめら',k:'カメラ',r:'kamera'}, {h:'てすと',k:'テスト',r:'tesuto'}, {h:'とまと',k:'トマト',r:'tomato'},
+            {h:'すいか',k:'スイカ',r:'suika'}, {h:'めめ',k:'メメ',r:'meme'}, {h:'おはよう',k:'オハヨウ',r:'ohayou'},
+            {h:'おやすみ',k:'オヤスミ',r:'oyasumi'}, {h:'せかい',k:'セカイ',r:'sekai'}, {h:'いぬ',k:'イヌ',r:'inu'},
+            {h:'とり',k:'トリ',r:'tori'}, {h:'くも',k:'クモ',r:'kumo'}, {h:'もも',k:'モモ',r:'momo'},
+            {h:'さる',k:'サル',r:'saru'}, {h:'うま',k:'ウマ',r:'uma'}, {h:'うし',k:'ウシ',r:'ushi'},
+            {h:'とら',k:'トラ',r:'tora'}, {h:'みみ',k:'ミミ',r:'mimi'}, {h:'はな',k:'ハナ',r:'hana'},
+            {h:'め',k:'メ',r:'me'}, {h:'くち',k:'クチ',r:'kuchi'}, {h:'あし',k:'アシ',r:'ashi'},
+            {h:'て',k:'テ',r:'te'}, {h:'かみ',k:'カミ',r:'kami'}, {h:'いえ',k:'イエ',r:'ie'},
+            {h:'いす',k:'イス',r:'isu'}, {h:'はし',k:'ハシ',r:'hashi'}, {h:'くつ',k:'クツ',r:'kutsu'},
+            {h:'うち',k:'ウチ',r:'uchi'}, {h:'ふね',k:'フネ',r:'fune'}, {h:'やま',k:'ヤマ',r:'yama'},
+            {h:'かわ',k:'カワ',r:'kawa'}, {h:'うみ',k:'ウミ',r:'umi'}, {h:'いけ',k:'イケ',r:'ike'},
+            {h:'つき',k:'ツキ',r:'tsuki'}, {h:'くさ',k:'クサ',r:'kusa'}, {h:'は',k:'ハ',r:'ha'},
+            {h:'き',k:'キ',r:'ki'}, {h:'えき',k:'エキ',r:'eki'}, {h:'みせ',k:'ミセ',r:'mise'},
+            {h:'まち',k:'マチ',r:'machi'}, {h:'こえ',k:'コエ',r:'koe'}, {h:'あめ',k:'アメ',r:'ame'},
+            {h:'にく',k:'ニク',r:'niku'}, {h:'しお',k:'シオ',r:'shio'}, {h:'さけ',k:'サケ',r:'sake'},
+            {h:'すし',k:'スシ',r:'sushi'}, {h:'あね',k:'アネ',r:'ane'}, {h:'あに',k:'アニ',r:'ani'},
+            {h:'おとうと',k:'オトウト',r:'otouto'}, {h:'いもうと',k:'イモウト',r:'imouto'},
+            {h:'つくえ',k:'ツクエ',r:'tsukue'}, {h:'と',k:'ト',r:'to'}, {h:'ふく',k:'フク',r:'fuku'},
+            {h:'かさ',k:'カサ',r:'kasa'}, {h:'くつした',k:'クツシタ',r:'kutsushita'}, {h:'うた',k:'ウタ',r:'uta'},
+            {h:'おと',k:'オト',r:'oto'}, {h:'ほし',k:'ホシ',r:'hoshi'}, {h:'はれ',k:'ハレ',r:'hare'},
+            {h:'くもり',k:'クモリ',r:'kumori'}, {h:'なみ',k:'ナミ',r:'nami'}, {h:'かい',k:'カイ',r:'kai'},
+            {h:'さかな',k:'サカナ',r:'sakana'}, {h:'しか',k:'シカ',r:'shika'}, {h:'あり',k:'アリ',r:'ari'},
+            {h:'かめ',k:'カメ',r:'kame'}, {h:'かに',k:'カニ',r:'kani'}, {h:'いか',k:'イカ',r:'ika'},
+            {h:'たこ',k:'タコ',r:'tako'}, {h:'なす',k:'ナス',r:'nasu'}, {h:'かき',k:'カキ',r:'kaki'},
+            {h:'くり',k:'クリ',r:'kuri'}, {h:'くま',k:'クマ',r:'kuma'}, {h:'いと',k:'イト',r:'ito'},
+            {h:'きぬ',k:'キヌ',r:'kinu'}, {h:'わた',k:'ワタ',r:'wata'}, {h:'つち',k:'ツチ',r:'tsuchi'},
+            {h:'いし',k:'イシ',r:'ishi'}, {h:'すな',k:'スナ',r:'suna'}, {h:'ほね',k:'ホネ',r:'hone'},
+            {h:'まゆ',k:'マユ',r:'mayu'}, {h:'おけ',k:'オケ',r:'oke'}, {h:'くし',k:'クシ',r:'kushi'},
+            {h:'てた',k:'テタ',r:'teta'}, {h:'むし',k:'ムシ',r:'mushi'}
         ];
 
-        const WORDS_KATAKANA = [
-            {k:'カメラ',r:'kamera'}, {k:'クラス',r:'kurasu'}, {k:'テスト',r:'tesuto'}, {k:'トマト',r:'tomato'},
-            {k:'ピアノ',r:'piano'}, {k:'マウス',r:'mausu'}, {k:'メロン',r:'meron'}, {k:'ライオン',r:'raion'},
-            {k:'アメリカ',r:'amerika'}, {k:'アフリカ',r:'afurika'}, {k:'ミルク',r:'miruku'}, {k:'ホテル',r:'hoteru'},
-            {k:'マスク',r:'masuku'}, {k:'スイス',r:'suisu'}, {k:'トイレ',r:'toire'}, {k:'タイヤ',r:'taiya'},
-            {k:'スイカ',r:'suika'}, {k:'ナイフ',r:'naifu'}, {k:'クモ',r:'kumo'}, {k:'メカ',r:'meka'},
-            {k:'キス',r:'kisu'}, {k:'メモ',r:'memo'}, {k:'ミク',r:'miku'}, {k:'ヘア',r:'hea'},
-            {k:'ツア',r:'tsua'}, {k:'マキ',r:'maki'}, {k:'システム',r:'shisutemu'}, {k:'アニメ',r:'anime'},
-            {k:'スマホ',r:'sumaho'}, {k:'テキスト',r:'tekisuto'}
-        ];
-
-        // Dakuten and Handakuten (Single Letters)
+        // Dakuten and Handakuten (Single Letters - 25 unique characters)
         const DAKUTEN_SINGLE = [
             {h:'が', k:'ガ', r:'ga'}, {h:'ぎ', k:'ギ', r:'gi'}, {h:'ぐ', k:'グ', r:'gu'}, {h:'げ', k:'ゲ', r:'ge'}, {h:'ご', k:'ゴ', r:'go'},
             {h:'ざ', k:'ザ', r:'za'}, {h:'じ', k:'ジ', r:'ji'}, {h:'ず', k:'ズ', r:'zu'}, {h:'ぜ', k:'ゼ', r:'ze'}, {h:'ぞ', k:'ゾ', r:'zo'},
@@ -93,92 +103,134 @@
             {h:'ぱ', k:'パ', r:'pa'}, {h:'ぴ', k:'ピ', r:'pi'}, {h:'ぷ', k:'プ', r:'pu'}, {h:'ぺ', k:'ペ', r:'pe'}, {h:'ぽ', k:'ポ', r:'po'}
         ];
 
-        // Dakuten and Handakuten (Combined - EXCLUDING sokuon っ/ッ as requested)
-        const WORDS_DAKUTEN_HIRAGANA = [
-            {k:'てんき', r:'tenki'}, {k:'りんご', r:'ringo'}, {k:'でんわ', r:'denwa'},
-            {k:'えんぴつ', r:'enpitsu'}, {k:'かばん', r:'kaban'}, {k:'しんぶん', r:'shinbun'},
-            {k:'おんがく', r:'ongaku'}, {k:'てんぷら', r:'tenpura'}, {k:'まんが', r:'manga'},
-            {k:'ともだち', r:'tomodachi'}, {k:'みず', r:'mizu'}, {k:'ぶどう', r:'budou'}, {k:'てがみ', r:'tegami'},
-            {k:'かぜ', r:'kaze'}, {k:'べんきょう', r:'benkyou'}, {k:'にほんご', r:'nihongo'}, {k:'さんぽ', r:'sanpo'},
-            {k:'じしん', r:'jishin'}, {k:'えいが', r:'eiga'}, {k:'ばんごう', r:'bangou'}, {k:'かぞく', r:'kazoku'},
-            {k:'かぎ', r:'kagi'}
+        // Dakuten and Handakuten (Combined - EXCLUDING sokuon っ/ッ - 100 unique words)
+        const WORDS_DAKUTEN_COMBINED = [
+            {h:'てんき', k:'テンキ', r:'tenki'}, {h:'りんご', k:'リンゴ', r:'ringo'}, {h:'でんわ', k:'デンワ', r:'denwa'},
+            {h:'えんぴつ', k:'エンピツ', r:'enpitsu'}, {h:'かばん', k:'カバン', r:'kaban'}, {h:'しんぶん', k:'シンブン', r:'shinbun'},
+            {h:'おんがく', k:'オンガク', r:'ongaku'}, {h:'てんぷら', k:'テンプラ', r:'tenpura'}, {h:'まんが', k:'マンガ', r:'manga'},
+            {h:'みず', k:'ミズ', r:'mizu'}, {h:'ぶどう', k:'ブドウ', r:'budou'}, {h:'かぜ', k:'カゼ', r:'kaze'},
+            {h:'かぎ', k:'カギ', r:'kagi'}, {h:'ぱん', k:'パン', r:'pan'}, {h:'てれび', k:'テレビ', r:'terebi'},
+            {h:'らじお', k:'ラジオ', r:'rajio'}, {h:'ぺん', k:'ペン', r:'pen'}, {h:'ぼたん', k:'ボタン', r:'botan'},
+            {h:'ぜろ', k:'ゼロ', r:'zero'}, {h:'どあ', k:'ドア', r:'doa'}, {h:'ずぼん', k:'ズボン', r:'zubon'},
+            {h:'ごはん', k:'ゴハン', r:'gohan'}, {h:'ぶた', k:'ブタ', r:'buta'}, {h:'かび', k:'カビ', r:'kabi'},
+            {h:'えいが', k:'エイガ', r:'eiga'}, {h:'れいぞうこ', k:'レイゾウコ', r:'reizouko'}, {h:'かぞく', k:'カゾク', r:'kazoku'},
+            {h:'じかん', k:'ジカン', r:'jikan'}, {h:'じしょ', k:'ジショ', r:'jisho'}, {h:'えん', k:'エン', r:'en'},
+            {h:'ぎんこう', k:'ギンコウ', r:'ginkou'}, {h:'でんしゃ', k:'デンシャ', r:'densha'}, {h:'じてんしゃ', k:'ジテンシャ', r:'jitensha'},
+            {h:'かいしゃ', k:'カイシャ', r:'kaisha'}, {h:'びじゅつかん', k:'ビジュツカン', r:'bijutsukan'}, {h:'ばんごう', k:'バンゴウ', r:'bangou'},
+            {h:'えんそく', k:'エンソク', r:'ensoku'}, {h:'べんり', k:'ベンリ', r:'benri'}, {h:'びょうき', k:'ビョウキ', r:'byouki'},
+            {h:'はがき', k:'ハガキ', r:'hagaki'}, {h:'ともだち', k:'トモダチ', r:'tomodachi'}, {h:'くだもの', k:'クダモノ', r:'kudamono'},
+            {h:'たまご', k:'タマゴ', r:'tamago'}, {h:'ねんど', k:'ネンド', r:'nendo'}, {h:'じどうしゃ', k:'ジドウシャ', r:'jidousha'},
+            {h:'ばら', k:'バラ', r:'bara'}, {h:'まんしょん', k:'マンション', r:'manshon'}, {h:'びる', k:'ビル', r:'biru'},
+            {h:'びーる', k:'ビール', r:'biiru'}, {h:'ずこう', k:'ズコウ', r:'zukou'}, {h:'がいこく', k:'ガイコク', r:'gaikoku'},
+            {h:'げんき', k:'ゲンキ', r:'genki'}, {h:'だいじょうぶ', k:'ダイジョウブ', r:'daijoubu'}, {h:'ばんごはん', k:'バンゴハン', r:'bangohan'},
+            {h:'あさごはん', k:'アサゴハン', r:'asagohan'}, {h:'ひるごはん', k:'ヒルゴハン', r:'hirugohan'}, {h:'さんぽ', k:'サンポ', r:'sanpo'},
+            {h:'おべんとう', k:'オベントウ', r:'obentou'}, {h:'だんぼう', k:'ダンボウ', r:'danbou'}, {h:'れいぼう', k:'レイボウ', r:'reibou'},
+            {h:'まんげつ', k:'マンゲツ', r:'mangetsu'}, {h:'でんち', k:'デンチ', r:'denchi'}, {h:'がが', k:'ガガ', r:'gaga'},
+            {h:'げき', k:'ゲキ', r:'geki'}, {h:'じしん', k:'ジシン', r:'jishin'}, {h:'てんごく', k:'テンゴク', r:'tengoku'},
+            {h:'おうじ', k:'オウジ', r:'ouji'}, {h:'ぼうし', k:'ボウシ', r:'boushi'}, {h:'ぶんどき', k:'ブンドキ', r:'bundoki'},
+            {h:'など', k:'ナド', r:'nado'}, {h:'だるま', k:'ダルマ', r:'daruma'}, {h:'れもん', k:'レモン', r:'remon'},
+            {h:'らいおん', k:'ライオン', r:'raion'}, {h:'ごみ', k:'ゴミ', r:'gomi'}, {h:'しんじゅ', k:'シンジュ', r:'shinju'},
+            {h:'こんばん', k:'コンバン', r:'konban'}, {h:'げんかん', k:'ゲンカン', r:'genkan'}, {h:'でんぐり', k:'デングリ', r:'denguri'},
+            {h:'ばんざい', k:'バンザイ', r:'banzai'}, {h:'じゆう', k:'ジユウ', r:'jiyuu'}, {h:'びじん', k:'ビジン', r:'bijin'},
+            {h:'ごぜん', k:'ゴゼン', r:'gozen'}, {h:'ごご', k:'ゴゴ', r:'gogo'}, {h:'しんぞう', k:'シンゾウ', r:'shinzou'},
+            {h:'どうぞ', k:'ドウゾ', r:'douzo'}, {h:'だいどころ', k:'ダイドコロ', r:'daidokoro'}, {h:'ばけつ', k:'バケツ', r:'baketsu'},
+            {h:'べんきょう', k:'ベンキョウ', r:'benkyou'}, {h:'てんぐ', k:'テング', r:'tengu'}, {h:'ぶんぐ', k:'ブング', r:'bungu'},
+            {h:'だいず', k:'ダイズ', r:'daizu'}, {h:'おじさん', k:'オジサン', r:'ojisan'}, {h:'おばさん', k:'オバサン', r:'obasan'},
+            {h:'どうぶつ', k:'ドウブツ', r:'doubutsu'}, {h:'えんげい', k:'エンゲイ', r:'engei'}, {h:'でんげん', k:'デンゲン', r:'dengen'},
+            {h:'だんご', k:'ダンゴ', r:'dango'}, {h:'ぼうげん', k:'ボウゲン', r:'bougen'}, {h:'ばんきん', k:'バンキン', r:'bankin'}
         ];
 
-        const WORDS_DAKUTEN_KATAKANA = [
-            {k:'パン', r:'pan'}, {k:'テレビ', r:'terebi'}, {k:'ラジオ', r:'rajio'},
-            {k:'ペン', r:'pen'}, {k:'ボタン', r:'botan'}, {k:'トランク', r:'toranku'}, {k:'リンゴ', r:'ringo'}, 
-            {k:'コンビニ', r:'konbini'}, {k:'プレゼント', r:'purezento'}, {k:'パパ', r:'papa'}, 
-            {k:'ガンダム', r:'gandamu'}, {k:'ダンス', r:'dansu'}, {k:'ピンク', r:'pinku'}, 
-            {k:'ゲーム', r:'geemu'}, {k:'バナナ', r:'banana'}, {k:'デパート', r:'depaato'},
-            {k:'ビル', r:'biru'}, {k:'ゼロ', r:'zero'}, {k:'ドア', r:'doa'}, {k:'ズボン', r:'zubon'}
+        // Mixed (All combined words: Hatsuson, Sokuon, Dakuten, Handakuten, Yo-on, etc. - 100 unique words)
+        const WORDS_MIXED = [
+            {h:'がっこう', k:'ガッコウ', r:'gakkou'}, {h:'きっぷ', k:'キップ', r:'kippu'}, {h:'ざっし', k:'ザッシ', r:'zasshi'},
+            {h:'びょういん', k:'ビョウイン', r:'byouin'}, {h:'しゅくだい', k:'シュクダイ', r:'shukudai'}, {h:'りょこう', k:'リョコウ', r:'ryokou'},
+            {h:'おちゃ', k:'オチャ', r:'ocha'}, {h:'いっしょ', k:'イッショ', r:'issho'}, {h:'ちょっと', k:'チョット', r:'chotto'},
+            {h:'べっど', k:'ベッド', r:'beddo'}, {h:'ばっぐ', k:'バッグ', r:'baggu'}, {h:'こっぷ', k:'コップ', r:'koppu'},
+            {h:'かっぷ', k:'カップ', r:'kappu'}, {h:'まっち', k:'マッチ', r:'macchi'}, {h:'ちけっと', k:'チケット', r:'chiketto'},
+            {h:'さっかー', k:'サッカー', r:'sakkaa'}, {h:'しゃつ', k:'シャツ', r:'shatsu'}, {h:'ちょこ', k:'チョコ', r:'choko'},
+            {h:'きっさてん', k:'キッサテン', r:'kissaten'}, {h:'おっと', k:'オット', r:'otto'}, {h:'よっと', k:'ヨット', r:'yotto'},
+            {h:'きって', k:'キッテ', r:'kitte'}, {h:'はっぱ', k:'ハッパ', r:'happa'}, {h:'にっき', k:'ニッキ', r:'nikki'},
+            {h:'しっぽ', k:'シッポ', r:'shippo'}, {h:'りゅっく', k:'リュック', r:'ryukku'}, {h:'さっか', k:'サッカ', r:'sakka'},
+            {h:'いっかい', k:'イッカイ', r:'ikkai'}, {h:'ろっかい', k:'ロッカイ', r:'rokkai'}, {h:'はっぴ', k:'ハッピ', r:'happi'},
+            {h:'かっこう', k:'カッコウ', r:'kakkou'}, {h:'けっこん', k:'ケッコン', r:'kekkon'}, {h:'せっけん', k:'セッケン', r:'sekken'},
+            {h:'やっつ', k:'ヤッツ', r:'yattsu'}, {h:'よっつ', k:'ヨッツ', r:'yottsu'}, {h:'むっつ', k:'ムッツ', r:'muttsu'},
+            {h:'いっぴき', k:'イッピキ', r:'ippiki'}, {h:'はっぴき', k:'ハッピキ', r:'happiki'}, {h:'じゅっぴき', k:'ジュッピキ', r:'juppiki'},
+            {h:'れっしゃ', k:'レッシャ', r:'ressha'}, {h:'じゃあ', k:'ジャア', r:'jaa'}, {h:'じゅぎょう', k:'ジュギョウ', r:'jugyou'},
+            {h:'しょくどう', k:'ショクドウ', r:'shokudou'}, {h:'しょうゆ', k:'ショウユ', r:'shouyu'}, {h:'しゃしん', k:'シャシン', r:'shashin'},
+            {h:'しゅみ', k:'シュミ', r:'shumi'}, {h:'りょうり', k:'リョウリ', r:'ryouri'}, {h:'りゅう', k:'リュウ', r:'ryuu'},
+            {h:'じょせい', k:'ジョセイ', r:'josei'}, {h:'しんりゃく', k:'シンラャク', r:'shinryaku'}, {h:'にんぎょう', k:'ニンギョウ', r:'ningyou'},
+            {h:'しゅじゅつ', k:'シュジュツ', r:'shujutsu'}, {h:'はっしゃ', k:'ハッシャ', r:'hassha'}, {h:'しゅっぱつ', k:'シュッパツ', r:'shuppatsu'},
+            {h:'けっせき', k:'ケッセキ', r:'kesseki'}, {h:'しゅっせき', k:'シュッセキ', r:'shusseki'}, {h:'はっけん', k:'ハッケン', r:'hakken'},
+            {h:'はっぴょう', k:'ハッピョウ', r:'happyou'}, {h:'しっぱい', k:'シッパイ', r:'shippai'}, {h:'やっぱり', k:'ヤッパリ', r:'yappari'},
+            {h:'さっぱり', k:'サッパリ', r:'sappari'}, {h:'すっきり', k:'スッキリ', r:'sukkiri'}, {h:'ぴったり', k:'ピッタリ', r:'pittari'},
+            {h:'しょっぷ', k:'ショップ', r:'shoppu'}, {h:'ねっと', k:'ネット', r:'netto'}, {h:'かっと', k:'カット', r:'katto'},
+            {h:'ぺっと', k:'ペット', r:'petto'}, {h:'けっちゃっぷ', k:'ケッチャップ', r:'keccappu'}, {h:'すりっぱ', k:'スリッパ', r:'surippa'},
+            {h:'でっき', k:'デッキ', r:'dekki'}, {h:'とらっく', k:'トラック', r:'torakku'}, {h:'まっちゃ', k:'マッチャ', r:'maccha'},
+            {h:'ひゃっかてん', k:'ヒャッカテン', r:'hyakkaten'}, {h:'はっしん', k:'ハッシン', r:'hasshin'}, {h:'がっしょう', k:'ガッショウ', r:'gasshou'},
+            {h:'いっさつ', k:'イッサツ', r:'issatsu'}, {h:'かっせん', k:'カッセン', r:'kassen'}, {h:'しっそう', k:'シッソウ', r:'shissou'},
+            {h:'じゅっさい', k:'ジュッサイ', r:'jussai'}, {h:'はっさい', k:'ハッサイ', r:'hassai'}, {h:'よっちゃん', k:'ヨッチャン', r:'yocchan'},
+            {h:'いっちゃく', k:'イッチャク', r:'icchaku'}, {h:'しょっき', k:'ショッキ', r:'shokki'}, {h:'がっき', k:'ガッキ', r:'gakki'},
+            {h:'てっきょ', k:'テッキョ', r:'tekkyo'}, {h:'だっしゅ', k:'ダッシュ', r:'dasshu'}, {h:'ぷれぜんと', k:'プレゼント', r:'purezento'},
+            {h:'しょっく', k:'ショック', r:'shokku'}, {h:'けっか', k:'ケッカ', r:'kekka'}, {h:'いっぱん', k:'イッパン', r:'ippan'},
+            {h:'しゅっしん', k:'シュッシン', r:'shunshin'}, {h:'にっぽん', k:'ニッポン', r:'nippon'}, {h:'けっせん', k:'ケッセン', r:'kessen'},
+            {h:'ろっぷ', k:'ロップ', r:'roppu'}, {h:'ばっさ', k:'バッサ', r:'bassa'}, {h:'まっか', k:'マッカ', r:'makka'},
+            {h:'らっぱ', k:'ラッパ', r:'rappa'}, {h:'すてっぷ', k:'ステップ', r:'suteppu'}, {h:'すりっぴー', k:'スリッピー', r:'surippee'}
         ];
 
-        // Ezzz Difficulty (All combined words: Hatsuson, Sokuon, Dakuten, Handakuten, Yo-on, etc.)
-        const WORDS_EZZZ_HIRAGANA = [
-            {k:'がっこう', r:'gakkou'}, {k:'きっぷ', r:'kippu'}, {k:'ざっし', r:'zasshi'},
-            {k:'べんきょう', r:'benkyou'}, {k:'ひゃく', r:'hyaku'}, {k:'びょういん', r:'byouin'},
-            {k:'しゅくだい', r:'shukudai'}, {k:'りょこう', r:'ryokou'}, {k:'おちゃ', r:'ocha'},
-            {k:'にんぎょう', r:'ningyou'}, {k:'じゅうどう', r:'juudou'}, {k:'いっしょ', r:'issho'},
-            {k:'ちょっと', r:'chotto'}, {k:'はっぴょう', r:'happyou'}, {k:'かんしゃ', r:'kansha'},
-            {k:'てんぷら', r:'tenpura'}, {k:'しんぶん', r:'shinbun'}, {k:'おっちゃ', r:'occha'},
-            {k:'ちゅうしゃじょ', r:'chuushajo'}, {k:'きょうりゅう', r:'kyouryuu'}
+        // Short Sentences (40 unique short conversational sentences)
+        const SENTENCES = [
+            {h:'おはようございます', k:'オハヨウゴザイマス', r:'ohayou gozaimasu'},
+            {h:'ありがとうございます', k:'アリガトウゴザイマス', r:'arigatou gozaimasu'},
+            {h:'わたしはがくせいです', k:'ワタシハガクセイデス', r:'watashi wa gakusei desu'},
+            {h:'これはほんです', k:'コレハホンデス', r:'kore wa hon desu'},
+            {h:'おげんきですか', k:'オゲンキデスカ', r:'o genki desuka'},
+            {h:'いまなんじですか', k:'イマナンジデスカ', r:'ima nanji desuka'},
+            {h:'すみません', k:'スミマセン', r:'sumimasen'},
+            {h:'おねがいします', k:'オネガイシマス', r:'onegaishimasu'},
+            {h:'ごめんなさい', k:'ゴメンナサイ', r:'gomen nasai'},
+            {h:'わかりません', k:'ワカリマセン', r:'wakarimasen'},
+            {h:'にほんごがわかります', k:'ニホンゴガワカリマス', r:'nihongo ga wakarimasu'},
+            {h:'すきです', k:'スキデス', r:'suki desu'},
+            {h:'おやすみなさい', k:'オヤスミナサイ', r:'oyasumi nasai'},
+            {h:'はじめまして', k:'ハジメマシテ', r:'hajimemashite'},
+            {h:'よろしくおねがいします', k:'ヨロシクオネガイシマス', r:'yoroshiku onegaishimasu'},
+            {h:'おなまえはなんですか', k:'オナマエハナンデスカ', r:'o namae wa nan desuka'},
+            {h:'いくらですか', k:'イクラデスカ', r:'ikura desuka'},
+            {h:'これをください', k:'コレヲクダサイ', r:'kore wo kudasai'},
+            {h:'トイレはどこですか', k:'トイレハドコデスカ', r:'toire wa doko desuka'},
+            {h:'おいしいです', k:'オイシイデス', r:'oishiidesu'},
+            {h:'ただいま', k:'タダイマ', r:'tadaima'},
+            {h:'おかえりなさい', k:'オカエリナサイ', r:'okaerinasai'},
+            {h:'いってきます', k:'イッテキマス', r:'ittekimasu'},
+            {h:'いってらっしゃい', k:'イッテラッシャイ', r:'itterasshai'},
+            {h:'いただきます', k:'イタダキマス', r:'itadakimasu'},
+            {h:'ごちそうさまでした', k:'ゴチソウサマデシタ', r:'gochisousama deshita'},
+            {h:'おめでとうございます', k:'オメデトウゴザイマス', r:'omedetou gozaimasu'},
+            {h:'またあした', k:'マタアシタ', r:'mata ashita'},
+            {h:'おひさしぶりです', k:'オヒサシブリデス', r:'o hisashiburi desu'},
+            {h:'おなかがすきました', k:'オナカガスキマシタ', r:'onaka ga sukimashita'},
+            {h:'のどがかわきました', k:'ノドガカワキマシタ', r:'nodo ga kawakimashita'},
+            {h:'たいへんですね', k:'タイヘンデスネ', r:'taihen desu ne'},
+            {h:'よくできました', k:'ヨクデキマシタ', r:'yoku dekimashita'},
+            {h:'ちょっとまってください', k:'チョットマッテクダサイ', r:'chotto matte kudasai'},
+            {h:'もういちどおねがいします', k:'モウイチドオネガイシマス', r:'mou ichido onegaishimasu'},
+            {h:'てんきがいいですね', k:'テンキガイイデスネ', r:'tenki ga ii desu ne'},
+            {h:'あついですね', k:'アツイデスネ', r:'atsui desu ne'},
+            {h:'さむいですね', k:'サムイデスネ', r:'samui desu ne'},
+            {h:'どういたしまして', k:'ドウイタシマシテ', r:'douitashimashite'},
+            {h:'しつれいします', k:'シツレイシマス', r:'shitsurei shimasu'}
         ];
-
-        const WORDS_EZZZ_KATAKANA = [
-            {k:'ベッド', r:'beddo'}, {k:'バッグ', r:'baggu'}, {k:'コップ', r:'koppu'},
-            {k:'カップ', r:'kappu'}, {k:'マッチ', r:'macchi'}, {k:'チケット', r:'chiketto'},
-            {k:'サッカー', r:'sakkaa'}, {k:'シャツ', r:'shatsu'}, {k:'チョコ', r:'choko'},
-            {k:'キャベツ', r:'kyabetsu'}, {k:'ジュース', r:'juusu'}, {k:'シャンプー', r:'shanpuu'},
-            {k:'ジョギング', r:'jogingu'}, {k:'コンピューター', r:'konpyuutaa'}, {k:'ロケット', r:'roketto'},
-            {k:'キッチン', r:'kicchin'}, {k:'キャッチ', r:'kyacchi'}, {k:'ショップ', r:'shoppu'},
-            {k:'リュック', r:'ryukku'}, {k:'マンション', r:'manshon'}
-        ];
-
 
         function generateQuestions(settings) {
             let pool = [];
             
-            // Populate pool based on user preferences and expanded difficulties
-            if (settings.difficulty === 'single') {
-                SINGLE_CHARS.forEach(item => {
-                    if (settings.kanaType === 'hiragana' || settings.kanaType === 'both') {
-                        pool.push({ kana: item.h, romaji: item.r });
-                    }
-                    if (settings.kanaType === 'katakana' || settings.kanaType === 'both') {
-                        pool.push({ kana: item.k, romaji: item.r });
-                    }
-                });
-            } else if (settings.difficulty === 'combined') {
-                if (settings.kanaType === 'hiragana' || settings.kanaType === 'both') {
-                    WORDS_HIRAGANA.forEach(w => pool.push({ kana: w.k, romaji: w.r }));
-                }
-                if (settings.kanaType === 'katakana' || settings.kanaType === 'both') {
-                    WORDS_KATAKANA.forEach(w => pool.push({ kana: w.k, romaji: w.r }));
-                }
-            } else if (settings.difficulty === 'dakuten_single') {
-                DAKUTEN_SINGLE.forEach(item => {
-                    if (settings.kanaType === 'hiragana' || settings.kanaType === 'both') {
-                        pool.push({ kana: item.h, romaji: item.r });
-                    }
-                    if (settings.kanaType === 'katakana' || settings.kanaType === 'both') {
-                        pool.push({ kana: item.k, romaji: item.r });
-                    }
-                });
-            } else if (settings.difficulty === 'dakuten_combined') {
-                if (settings.kanaType === 'hiragana' || settings.kanaType === 'both') {
-                    WORDS_DAKUTEN_HIRAGANA.forEach(w => pool.push({ kana: w.k, romaji: w.r }));
-                }
-                if (settings.kanaType === 'katakana' || settings.kanaType === 'both') {
-                    WORDS_DAKUTEN_KATAKANA.forEach(w => pool.push({ kana: w.k, romaji: w.r }));
-                }
-            } else if (settings.difficulty === 'ezzz') {
-                if (settings.kanaType === 'hiragana' || settings.kanaType === 'both') {
-                    WORDS_EZZZ_HIRAGANA.forEach(w => pool.push({ kana: w.k, romaji: w.r }));
-                }
-                if (settings.kanaType === 'katakana' || settings.kanaType === 'both') {
-                    WORDS_EZZZ_KATAKANA.forEach(w => pool.push({ kana: w.k, romaji: w.r }));
-                }
-            }
+            // Populate pool based on difficulty
+            if (settings.difficulty === 'single') pool = [...SINGLE_CHARS];
+            else if (settings.difficulty === 'combined') pool = [...WORDS_COMBINED];
+            else if (settings.difficulty === 'dakuten_single') pool = [...DAKUTEN_SINGLE];
+            else if (settings.difficulty === 'dakuten_combined') pool = [...WORDS_DAKUTEN_COMBINED];
+            else if (settings.difficulty === 'mixed') pool = [...WORDS_MIXED];
+            else if (settings.difficulty === 'sentences') pool = [...SENTENCES];
 
             // Shuffle and clamp size
             pool = pool.sort(() => 0.5 - Math.random());
@@ -189,18 +241,28 @@
             
             for(let i = 0; i < count; i++) {
                 let current = pool[i];
-                let qText = settings.mode === 'kanaToRomaji' ? current.kana : current.romaji;
-                let correctText = settings.mode === 'kanaToRomaji' ? current.romaji : current.kana;
+                let qText, correctText;
+                
+                // Map the active game mode configurations to standardized data definitions
+                if (settings.mode === 'h2r') { qText = current.h; correctText = current.r; }
+                else if (settings.mode === 'k2r') { qText = current.k; correctText = current.r; }
+                else if (settings.mode === 'h2k') { qText = current.h; correctText = current.k; }
+                else if (settings.mode === 'k2h') { qText = current.k; correctText = current.h; }
                 
                 // Keep option pools free of duplicates
-                let wrongPool = pool.filter(x => x.romaji !== current.romaji); 
+                let wrongPool = pool.filter(x => x.r !== current.r); 
                 wrongPool = wrongPool.sort(() => 0.5 - Math.random()).slice(0, 3);
                 
                 while (wrongPool.length < 3) {
                     wrongPool.push(wrongPool[0] || current); 
                 }
 
-                let options = [correctText, ...wrongPool.map(x => settings.mode === 'kanaToRomaji' ? x.romaji : x.kana)];
+                // Gather choices based on the target text (the correct answer side)
+                let options = [correctText, ...wrongPool.map(x => {
+                    if (settings.mode === 'h2r' || settings.mode === 'k2r') return x.r;
+                    if (settings.mode === 'h2k') return x.k;
+                    if (settings.mode === 'k2h') return x.h;
+                })];
                 options = options.sort(() => 0.5 - Math.random());
                 
                 questions.push({
@@ -222,16 +284,31 @@
             "E5", null, "C5", "D5", "B4", null, null, null
         ];
 
-
         function Home({ onStart }) {
-            const [kanaType, setKanaType] = React.useState('both');
-            const [mode, setMode] = React.useState('kanaToRomaji');
+            const [mode, setMode] = React.useState('h2k');
             const [qCount, setQCount] = React.useState(10);
             const [difficulty, setDifficulty] = React.useState('single');
 
+            // Safe user typing handler to avoid breaking state with temporarily blank entries
             const handleCountChange = (e) => {
-                const val = parseInt(e.target.value) || 1;
-                setQCount(val);
+                let val = parseInt(e.target.value);
+                if (isNaN(val)) {
+                    setQCount(''); // Allow typing cleanly (avoid locking keyboard edit state)
+                } else {
+                    setQCount(Math.max(1, val)); // Clamp at minimum of 1
+                }
+            };
+
+            // Safely initialize audio and start the test setup
+            const handlePlayClick = async () => {
+                try {
+                    // Pre-emptively start audio inside user touch/gesture context to bypass autoplay blocks
+                    await Tone.start();
+                } catch (e) {
+                    console.warn("Audio Context init deferred", e);
+                }
+                const finalCount = Math.max(1, parseInt(qCount) || 10);
+                onStart({ mode, questionCount: finalCount, difficulty });
             };
 
             return (
@@ -244,30 +321,22 @@
                         
                         <div className="space-y-5">
                             <div>
-                                <label className="block text-xs font-black text-sky-600 uppercase tracking-wider mb-2">Kana Selection</label>
-                                <select value={kanaType} onChange={e=>setKanaType(e.target.value)} className="w-full p-4 bg-sky-50 rounded-xl border border-sky-100 outline-none focus:ring-4 focus:ring-sky-200 font-bold text-gray-700 transition-all cursor-pointer">
-                                    <option value="hiragana">Hiragana Only</option>
-                                    <option value="katakana">Katakana Only</option>
-                                    <option value="both">Hiragana & Katakana</option>
-                                </select>
-                            </div>
-
-                            <div>
                                 <label className="block text-xs font-black text-sky-600 uppercase tracking-wider mb-2">Game Mode</label>
                                 <select value={mode} onChange={e=>setMode(e.target.value)} className="w-full p-4 bg-sky-50 rounded-xl border border-sky-100 outline-none focus:ring-4 focus:ring-sky-200 font-bold text-gray-700 transition-all cursor-pointer">
-                                    <option value="kanaToRomaji">Kana to Romaji</option>
-                                    <option value="romajiToKana">Romaji to Kana</option>
+                                    <option value="h2r">Hiragana to Romaji</option>
+                                    <option value="k2r">Katakana to Romaji</option>
+                                    <option value="h2k">Hiragana to Katakana</option>
+                                    <option value="k2h">Katakana to Hiragana</option>
                                 </select>
                             </div>
 
                             <div>
                                 <label className="block text-xs font-black text-sky-600 uppercase tracking-wider mb-2">Question Count</label>
                                 <div className="flex items-center space-x-3">
-                                    {/* Configured exactly 70px as requested */}
-                                    <button onClick={()=>setQCount(Math.max(1, qCount - 1))} className="w-[70px] h-14 bg-sky-100 hover:bg-sky-200 text-sky-800 rounded-xl font-black text-2xl shadow-[0_4px_0_0_#93c5fd] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center select-none">-</button>
+                                    {/* Locked width exactly at 70px as requested */}
+                                    <button onClick={()=>setQCount(prev => Math.max(1, (parseInt(prev) || 10) - 1))} className="w-[70px] h-14 bg-sky-100 hover:bg-sky-200 text-sky-800 rounded-xl font-black text-2xl shadow-[0_4px_0_0_#93c5fd] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center select-none">-</button>
                                     <input type="number" value={qCount} onChange={handleCountChange} className="flex-1 min-w-[60px] p-4 bg-sky-50 rounded-xl border border-sky-100 outline-none focus:ring-4 focus:ring-sky-200 text-center font-black text-xl text-sky-800" />
-                                    {/* Configured exactly 70px as requested */}
-                                    <button onClick={()=>setQCount(qCount + 1)} className="w-[70px] h-14 bg-sky-100 hover:bg-sky-200 text-sky-800 rounded-xl font-black text-2xl shadow-[0_4px_0_0_#93c5fd] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center select-none">+</button>
+                                    <button onClick={()=>setQCount(prev => (parseInt(prev) || 10) + 1)} className="w-[70px] h-14 bg-sky-100 hover:bg-sky-200 text-sky-800 rounded-xl font-black text-2xl shadow-[0_4px_0_0_#93c5fd] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center select-none">+</button>
                                 </div>
                             </div>
 
@@ -278,14 +347,16 @@
                                     <option value="combined">Combined Words</option>
                                     <option value="dakuten_single">Dakuten and Handakuten (Single)</option>
                                     <option value="dakuten_combined">Dakuten and Handakuten (Combined)</option>
-                                    <option value="ezzz">Ezzz</option>
+                                    <option value="mixed">Mixed (All combined words)</option>
+                                    <option value="sentences">Short Sentences</option>
                                 </select>
                             </div>
                         </div>
 
+                        {/* Decreased font size to text-lg to align cleanly with play icon emoji */}
                         <button 
-                            onClick={() => onStart({ kanaType, mode, questionCount: qCount, difficulty })}
-                            className="mt-8 w-full bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white font-black py-5 rounded-2xl shadow-[0_8px_0_0_#0284c7] active:shadow-none active:translate-y-[8px] transition-all text-2xl tracking-wide uppercase flex items-center justify-center gap-3"
+                            onClick={handlePlayClick}
+                            className="mt-8 w-full bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white font-black py-5 rounded-2xl shadow-[0_8px_0_0_#0284c7] active:shadow-none active:translate-y-[8px] transition-all text-lg tracking-wide uppercase flex items-center justify-center gap-3"
                         >
                             <span>🎮</span> Play Now
                         </button>
@@ -293,7 +364,6 @@
                 </div>
             );
         }
-
 
         function Game({ settings, onEnd }) {
             const [questions, setQuestions] = React.useState([]);
@@ -307,6 +377,14 @@
             const resultsRef = React.useRef([]);
             const synthRef = React.useRef(null);
             const seqRef = React.useRef(null);
+
+            // Determine time limit dynamically based on Game Mode and Difficulty settings
+            let timeLimit = 4000;
+            if (settings.difficulty === 'sentences') {
+                timeLimit = 15000;
+            } else if (settings.mode === 'h2k' || settings.mode === 'k2h') {
+                timeLimit = 9000;
+            }
 
             // Populate challenges on launch
             React.useEffect(() => {
@@ -354,19 +432,19 @@
                 }
             }, [isMuted]);
 
-            // Question countdown handler
+            // Question countdown handler dynamically applying the correct time limit
             React.useEffect(() => {
                 if (questions.length === 0) return;
                 
                 if (!isTransitioning) {
                     timerRef.current = setTimeout(() => {
                         handleTimeout();
-                    }, 4000);
+                    }, timeLimit);
                 }
                 return () => {
                     if (timerRef.current) clearTimeout(timerRef.current);
                 };
-            }, [currentQ, isTransitioning, questions]);
+            }, [currentQ, isTransitioning, questions, timeLimit]);
 
             const handleAnswer = (idx) => {
                 if (isTransitioning) return;
@@ -485,6 +563,7 @@
             );
 
             const q = questions[currentQ];
+            const isSentences = settings.difficulty === 'sentences';
 
             return (
                 <div className="min-h-screen bg-sky-50 flex flex-col font-sans h-screen overflow-hidden">
@@ -530,17 +609,20 @@
                             <div className="h-4 bg-sky-50 w-full relative border-b border-sky-100">
                                 <div 
                                     key={currentQ} 
-                                    className="absolute top-0 left-0 h-full bg-sky-400 animate-shrink origin-left"
-                                    style={{ animationPlayState: isTransitioning ? 'paused' : 'running' }}
+                                    className="absolute top-0 left-0 h-full bg-sky-400 origin-left"
+                                    style={{ 
+                                        animation: `shrink ${timeLimit / 1000}s linear forwards`,
+                                        animationPlayState: isTransitioning ? 'paused' : 'running' 
+                                    }}
                                 />
                             </div>
                             <div className="flex-1 flex items-center justify-center p-8 text-center bg-sky-50/10">
-                                <h2 className="text-6xl md:text-8xl lg:text-9xl font-black text-gray-800 break-words drop-shadow-md">{q.question}</h2>
+                                <h2 className={`${isSentences ? 'text-3xl md:text-5xl lg:text-6xl px-2' : 'text-6xl md:text-8xl lg:text-9xl'} font-black text-gray-800 break-words drop-shadow-md leading-tight`}>{q.question}</h2>
                             </div>
                         </div>
 
-                        {/* Answers section containing only centered texts */}
-                        <div className="grid grid-cols-2 gap-3 md:gap-6 h-[40vh] md:h-80">
+                        {/* Answers section containing responsive min-height bounds to grow cleanly for sentences */}
+                        <div className="grid grid-cols-2 gap-3 md:gap-6 min-h-[35vh] md:min-h-80 h-auto">
                             {q.options.map((opt, idx) => {
                                 const isCorrectOption = opt === q.correct;
                                 return (
@@ -549,7 +631,7 @@
                                         className={getButtonClass(idx, isCorrectOption)}
                                         onClick={() => handleAnswer(idx)}
                                     >
-                                        <div className="flex-1 text-center text-xl md:text-5xl drop-shadow-md font-bold leading-tight break-words px-4">
+                                        <div className={`flex-1 text-center ${isSentences ? 'text-lg md:text-2xl lg:text-3xl' : 'text-xl md:text-5xl'} drop-shadow-md font-bold leading-tight break-words px-2 md:px-4`}>
                                             {opt}
                                         </div>
                                     </div>
@@ -560,7 +642,6 @@
                 </div>
             );
         }
-
 
         function Result({ results, totalCount, onHome }) {
             const correctCount = results.filter(r => r.isCorrect).length;
@@ -627,7 +708,6 @@
                 </div>
             );
         }
-
 
         function App() {
             const [screen, setScreen] = React.useState('home');
